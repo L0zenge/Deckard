@@ -1,4 +1,3 @@
-python
 import re
 import argparse
 import sys
@@ -26,14 +25,28 @@ class Colors:
 
 # The Horadric Regex Pattern 
 SCAM_PATTERN = re.compile(
-    r"\b(?:sub[- ]?licens(?:e|ing)|in perpetuity|any (?:and )?all media|hereafter discovered|"
-    r"deriv(?:a|i)tive work|reproduction[s]? (?:either )?in whole or in part|waive[r]? (?:moral|class|jury)|"
-    r"class[- ]action|dispute[s]? resolved (?:exclusively )?by|agree not to sue|"
-    r"waive.*right to.*(?:sue|court|litigate)|"
-    r"(?:bot|robot(?:ic)?|automat(?:ed|ion)|script|third[- ]party|3rd[- ]party).+?(?:tamper|cheat|disqual|manipulat)|"
-    r"(?:generat(?:e|ive)|train|feed|model|algorithm|synthesiz).+?(?:material|submit|work|content|data))\b",
+    r"\b(?P<sublicense>sub[- ]?licens(?:e|ing))|"
+    r"\b(?P<perpetuity>in perpetuity|perpetual)\b|"
+    r"\b(?P<media_trap>any (?:and )?all media|hereafter discovered)\b|"
+    r"\b(?P<derivative>deriv(?:a|i)tive work)\b|"
+    r"\b(?P<whole_part>reproduction[s]? (?:either )?in whole or in part)\b|"
+    r"\b(?P<lawsuit_ban>waive[r]? (?:moral|class|jury)|class[- ]action|dispute[s]? resolved (?:exclusively )?by|agree not to sue|waive.*right to.*(?:sue|court|litigate))\b|"
+    r"\b(?P<bot_trap>(?:bot|robot(?:ic)?|automat(?:ed|ion)|script|third[- ]party|3rd[- ]party).+?(?:tamper|cheat|disqual|manipulat))\b|"
+    r"\b(?P<ai_train>(?:generat(?:e|ive)|train|feed|model|algorithm|synthesiz).+?(?:material|submit|work|content|data))\b",
     re.IGNORECASE | re.DOTALL
 )
+
+# Horadric Translation Matrix (Layman's Terms Map)
+LAYMAN_TRANSLATIONS = {
+    "sublicense": "They want the right to legally rent, lease, or outright sell your data/creations to third-party tech giants to train outside AI models—and your hands will be legally tied.",
+    "perpetuity": "This contract outlives you. 'Forever' means even if you delete your account, quit the industry, or pass away, they (and anyone they sell your work to) retain the legal right to use it.",
+    "media_trap": "The ultimate AI training model loophole. By pre-consenting to future media forms 'hereafter discovered,' you are giving them prior permission to feed your audio/visuals into algorithm engines.",
+    "derivative": "They want to generate 'similar but different' content based strictly on your style, melodies, or timbres without having to pay you a single cent for the new variation.",
+    "whole_part": "They can chop your track into pieces, isolate your vocals, or steal specific melodies. In AI music generation, this lets them isolate your 'stems' to train machine components.",
+    "lawsuit_ban": "You cannot sue them in an actual courtroom, and you cannot join forces with other scammed creators. Any fight must be fought completely alone in front of a private, closed-door corporate arbitrator.",
+    "bot_trap": "They can kick you out of the competition whenever they want without providing a shred of hard technical proof. They can blame 'suspicious scripts' to void a massive payout completely unchecked.",
+    "ai_train": "They are explicitly telling you they intend to harvest your submission to train internal models, build automated promotional tools, or synthetically replicate your work layout."
+}
 
 CAIN_WARNINGS = [
     "This text contains a great evil, the likes of which I have not seen since the fall of Tristram!",
@@ -45,20 +58,16 @@ CAIN_WARNINGS = [
 ]
 
 def play_identify_sound():
-    """Simulates the classic Diablo II Scroll of Identification sound effect and animation."""
     sys.stdout.write(f"\n{Colors.WARNING}[*click*]{Colors.ENDC} Uncapping the scroll case... ")
     sys.stdout.flush()
     time.sleep(0.4)
     
     sys.stdout.write(f"{Colors.BOLD}...tick...{Colors.ENDC} ")
     sys.stdout.flush()
-    
-    # Universal cross-platform terminal speaker alert code
     sys.stdout.write("\a")
     sys.stdout.flush()
     time.sleep(0.5)
     
-    # The magical text-reveal whoosh
     whoosh_frames = [
         f"{Colors.BLUE}➔ w{Colors.ENDC}",
         f"{Colors.BLUE}➔ wh{Colors.ENDC}",
@@ -111,15 +120,31 @@ def scan_text(text):
         match = SCAM_PATTERN.search(sentence)
         if match:
             matches_found += 1
+            
+            # Identify which specific capturing group was triggered
+            triggered_group = None
             matched_text = match.group(0)
+            for group_name, value in match.groupdict().items():
+                if value is not None:
+                    triggered_group = group_name
+                    matched_text = value
+                    break
+            
+            # Highlight the culprit phrase inside the text snippet
             highlighted_sentence = sentence.replace(
                 matched_text, f"{Colors.FAIL}{Colors.BOLD}{matched_text}{Colors.ENDC}"
             )
             
+            # Retrieve the appropriate layman translation or use a generic fallback
+            layman_translation = LAYMAN_TRANSLATIONS.get(
+                triggered_group, "They are trying to sneak obscure legal jargon past your eyes."
+            )
+            
             cain_quote = random.choice(CAIN_WARNINGS)
             print(f"{Colors.WARNING}[DESTRUCTION BLOCK #{matches_found}]{Colors.ENDC} \"{cain_quote}\"")
-            print(f"↳ ... {highlighted_sentence} ...\n")
-            time.sleep(0.1) 
+            print(f"  {Colors.BOLD}📜 Raw Line:{Colors.ENDC} ... {highlighted_sentence} ...")
+            print(f"  {Colors.GREEN}💡 Layman's Terms:{Colors.ENDC} {layman_translation}\n")
+            time.sleep(0.15) 
 
     if matches_found == 0:
         print(f"{Colors.GREEN}✓ \"You have quite a treasure there in that document! It appears clean of immediate corruption.\"{Colors.ENDC}\n")
