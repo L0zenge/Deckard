@@ -234,16 +234,26 @@
         }
 
         .tome-container.expanded .log-content {
-            font-size: 15px;
+            font-size: 14px;
             line-height: 1.6;
         }
 
-        .highlight {
+        /* High Severity Threat Colors */
+        .highlight-red {
             color: #ff6b6b;
             font-weight: bold;
             background: rgba(255, 107, 107, 0.15);
             padding: 1px 4px;
             border-radius: 2px;
+        }
+
+        .highlight-purple {
+            color: #d182ff;
+            font-weight: bold;
+            background: rgba(186, 85, 211, 0.25);
+            padding: 1px 4px;
+            border-radius: 2px;
+            border: 1px dashed #ba55d3;
         }
 
         .occurrence-badge {
@@ -256,7 +266,7 @@
             margin-left: 6px;
         }
 
-        .layman {
+        .layman-green {
             color: #4df066;
             display: block;
             margin-top: 6px;
@@ -266,15 +276,28 @@
             font-size: 14px;
         }
 
-        .tome-container.expanded .layman {
-            font-size: 16px;
+        .layman-purple {
+            color: #e2a8ff;
+            display: block;
+            margin-top: 6px;
+            margin-bottom: 22px;
+            padding: 8px 12px;
+            background: rgba(68, 20, 92, 0.35);
+            border-left: 4px solid #ba55d3;
+            border-radius: 0 4px 4px 0;
+            font-size: 14px;
+        }
+
+        .tome-container.expanded .layman-green,
+        .tome-container.expanded .layman-purple {
+            font-size: 15px;
         }
     </style>
 </head>
 <body>
 
     <div class="scene-stage">
-        <img src="cain.gif" alt="Deckard Cain" class="cain-sprite" onerror="this.style.display='none'">
+        <img src="deckard.png" alt="Deckard Cain" class="cain-sprite" onerror="this.style.display='none'">
         <img src="tome.png" alt="Tome of Identify" class="tome-bg-asset" onerror="this.style.display='none'">
 
         <div class="tome-container" id="tomeContainer">
@@ -285,16 +308,16 @@
 
             <p class="quote">"Stay awhile and listen..."</p>
             <div class="parchment">
-                <label for="textInput">🔮 Intentions will be revealed... ... ... ... ... ... ... ... ... 📜</label>
+                <label for="textInput" >🔮 ... ... ... ... ...Intentions will be revealed... ... ... ... 📜</label>
                 <textarea id="textInput" placeholder="Paste a web URL (https://...) or raw contract text directly..."></textarea>
                 
                 <div class="btn-container">
-                    <button onclick="processInput()">Identify Item 🔍</button>
-                </div>
+                    <button onclick="processInput()">Identify Items🔍</button>
+               </div>
             </div>
 
             <div class="output-box">
-                <h3>Identified Result:</h3>
+                <h3>Deciphered and deobfuscated results:</h3>
                 <div id="output" class="log-content">Unidentified item awaits identification...</div>
             </div>
         </div>
@@ -302,41 +325,54 @@
 
     <script>
         const CATEGORY_INFO = {
-            "lawsuit_ban": {
-                name: "ARBITRATION & LAWSUIT WAIVER",
-                translation: "You cannot sue them in an actual courtroom, and you cannot join forces with other scammed creators. Any fight must be fought completely alone in front of a private, closed-door corporate arbitrator."
+            "winner_trap": {
+                name: "☠️ WINNER FORFEITURE & TOTAL LIKENESS TRAP",
+                severity: "purple",
+                translation: "DANGER! If they label or select you as a 'Winner', you instantly surrender irrevocable rights to your name, likeness, audio, video, photos, and linked profile content in perpetuity, worldwide, without payment, notice, or recourse. They get perpetual commercial usage rights simply by handing out a nominal prize or title."
             },
             "perpetuity": {
-                name: "PERPETUAL RIGHTS / LIFETIME LOCK",
-                translation: "This contract outlives you. 'Forever' means even if you delete your account, quit the industry, or pass away, they (and anyone they sell your work to) retain the legal right to use it."
-            },
-            "sublicense": {
-                name: "THIRD-PARTY SUBLICENSING",
-                translation: "They want the right to legally rent, lease, or outright sell your data/creations to third-party tech giants to train outside AI models—and your hands will be legally tied."
+                name: "🔮 IN PERPETUITY / LIFETIME LOCK",
+                severity: "purple",
+                translation: "This contract outlives you. Phrasing like 'in perpetuity', 'perpetual', or 'foreseeable future' means even if you delete your account, quit the platform, or pass away, they (and anyone they sell your work to) permanently retain the legal right to use, license, and monetize your content."
             },
             "media_trap": {
-                name: "FUTURE MEDIA LOOPHOLE",
-                translation: "The ultimate AI training model loophole. By pre-consenting to future media forms 'hereafter discovered,' you are giving them prior permission to feed your audio/visuals into algorithm engines."
+                name: "🔮 FUTURE MEDIA & 'HEREAFTER DISCOVERED' LOOPHOLE",
+                severity: "purple",
+                translation: "The ultimate AI and modern tech loophole. By pre-consenting to use in 'any and all media now known or hereafter discovered', you have given them prior authorization to take your audio, visual, or written creations and run them through AI training models or new digital synthesis engines developed in the future."
             },
             "derivative": {
-                name: "DERIVATIVE WORK CLAIM",
-                translation: "They want to generate 'similar but different' content based strictly on your style, melodies, or timbres without having to pay you a single cent for the new variation."
+                name: "🔮 DERIVATIVE WORKS & PARTIAL REPRODUCTION HOOK",
+                severity: "purple",
+                translation: "They claim the right to make 'reproductions in whole or in part' or create 'derivative works'. In AI audio/visual synthesis, this allows them to split your song into isolated stems, vocal timbres, or melodies to train internal AI engines that generate 'similar but legally different' content without paying you a cent."
             },
-            "whole_part": {
-                name: "PARTIAL REPRODUCTION / STEM HARVESTING",
-                translation: "They can chop your track into pieces, isolate your vocals, or steal specific melodies. In AI music generation, this lets them isolate your 'stems' to train machine components."
-            },
-            "bot_trap": {
-                name: "ARBITRARY BOT / SCRIPT DISQUALIFICATION",
-                translation: "They can kick you out of the competition whenever they want without providing hard technical proof, blaming 'suspicious scripts' to void a massive payout completely unchecked."
+            "sublicense": {
+                name: "🔮 THIRD-PARTY SUBLICENSING LAUNDERING",
+                severity: "purple",
+                translation: "They want the right to sublicense your work to third parties in perpetuity. Even if they claim they aren't directly training AI right now, they reserve the right to sell or lease your entire dataset to outside tech giants for profit later on while claiming their own hands are clean."
             },
             "ai_train": {
-                name: "AI MODEL TRAINING HARVEST",
-                translation: "They are explicitly telling you they intend to harvest your submission to train internal models, build automated promotional tools, or synthetically replicate your work layout."
+                name: "🔮 EXPLICIT AI MODEL & SYNTHETIC HARVEST",
+                severity: "purple",
+                translation: "They explicitly state that submitted materials will be used to train, feed, build, or synthesize algorithmic models or machine assets. Your artistic output becomes raw training fodder for automated tools."
+            },
+            "single_arbitrator": {
+                name: "📜 SINGLE ARBITRATOR ABSOLUTE CONTROL",
+                severity: "red",
+                translation: "Any dispute you have is decided by ONE single corporate-selected arbitrator. That single individual holds final, unappealable say over all legal issues with no jury or court oversight."
+            },
+            "lawsuit_ban": {
+                name: "📜 LAWSUIT & CLASS ACTION BAN",
+                severity: "red",
+                translation: "You waive your rights to take them to a public courtroom, participate in a jury trial, or join forces with other scammed creators in a class-action lawsuit. You must face them alone in private arbitration."
+            },
+            "bot_trap": {
+                name: "📜 ARBITRARY DISQUALIFICATION & SCRIPT CLAUSE",
+                severity: "red",
+                translation: "They reserve unchecked authority to disqualify you or withhold earnings by alleging 'bot', 'script', or 'automated' manipulation without providing hard technical proof."
             }
         };
 
-        const SCAM_PATTERN = /\b(?<sublicense>sub[- ]?licens(?:e|ing))|\b(?<perpetuity>in perpetuity|perpetual)\b|\b(?<media_trap>any (?:and )?all media|hereafter discovered)\b|\b(?<derivative>deriv(?:a|i)tive work)\b|\b(?<whole_part>reproduction[s]? (?:either )?in whole or in part)\b|\b(?<lawsuit_ban>waive[r]? (?:moral|class|jury)|class[- ]action|dispute[s]? resolved (?:exclusively )?by|agree not to sue|waive.*right to.*(?:sue|court|litigate))\b|\b(?<bot_trap>(?:bot|robot(?:ic)?|automat(?:ed|ion)|script|third[- ]party|3rd[- ]party).+?(?:tamper|cheat|disqual|manipulat))\b|\b(?<ai_train>(?:generat(?:e|ive)|train|feed|model|algorithm|synthesiz).+?(?:material|submit|work|content|data))\b/gi;
+        const SCAM_PATTERN = /\b(?<winner_trap>(?:acceptance of a prize|winner['’]?s irrevocable consent|acceptance of (?:any|a) prize|irrevocable consent to operator|winner['’]?s name, likeness).+?(?:in perpetuity|without any permission|without compensation|submitted materials))|\b(?<sublicense>sub[- ]?licens(?:e|ing|able))|\b(?<perpetuity>in perpetuity|perpetual|foreseeable future)\b|\b(?<media_trap>any (?:and )?all media|hereafter discovered|now known or hereafter)\b|\b(?<derivative>deriv(?:a|i)tive work[s]?|reproduction[s]? (?:either )?in whole or in part)\b|\b(?<single_arbitrator>(?:single|sole|one) arbitrator)\b|\b(?<lawsuit_ban>waive[r]? (?:moral|class|jury)|class[- ]action|dispute[s]? resolved (?:exclusively )?by|agree not to sue|waive.*right to.*(?:sue|court|litigate))\b|\b(?<bot_trap>(?:bot|robot(?:ic)?|automat(?:ed|ion)|script|third[- ]party|3rd[- ]party).+?(?:tamper|cheat|disqual|manipulat))\b|\b(?<ai_train>(?:generat(?:e|ive)|train|feed|model|algorithm|synthesiz).+?(?:material|submit|work|content|data|submitted materials))\b/gi;
 
         function cleanHtml(htmlContent) {
             let text = htmlContent.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '');
@@ -347,31 +383,14 @@
         }
 
         async function fetchUrlText(url) {
-            const fetchWithTimeout = async (proxyUrl) => {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 8000);
-                try {
-                    const res = await fetch(proxyUrl, { signal: controller.signal });
-                    clearTimeout(timeoutId);
-                    if (!res.ok) throw new Error(`HTTP Status ${res.status}`);
-                    return await res.text();
-                } catch (e) {
-                    clearTimeout(timeoutId);
-                    throw e;
-                }
-            };
-
-            try {
-                const html = await fetchWithTimeout(`https://corsproxy.io/?${encodeURIComponent(url)}`);
-                return cleanHtml(html);
-            } catch (err1) {
-                try {
-                    const html2 = await fetchWithTimeout(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-                    return cleanHtml(html2);
-                } catch (err2) {
-                    throw new Error("Unable to fetch web URL.");
-                }
+            // Cleaned proxy setup to prevent hanging
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+            const response = await fetch(proxyUrl);
+            if (!response.ok) {
+                throw new Error("Target site rejected network reading request.");
             }
+            const json = await response.json();
+            return cleanHtml(json.contents);
         }
 
         async function processInput() {
@@ -385,20 +404,18 @@
             }
 
             tomeContainer.classList.add('expanded');
-            output.innerHTML = '<span style="color: #f3d283;">"Hello, my friend. Stay a while, and listen!" Reading text...</span>';
+            output.innerHTML = '<span style="color: #f3d283;">"Hello, my friend. Stay a while, and listen!" Uncapping scroll case and identifying dark clauses...</span>';
 
             let textToScan = rawInput;
 
-            // If input starts with http:// or https://, treat it as a web fetch
             if (rawInput.startsWith('http://') || rawInput.startsWith('https://')) {
                 try {
                     textToScan = await fetchUrlText(rawInput);
                 } catch (error) {
-                    output.innerHTML = `<span style="color: #ff6b6b;">[Cain] Unreachable web link! Error: ${error.message}</span>`;
+                    output.innerHTML = `<span style="color: #ff6b6b;">[Cain] Could not fetch remote link automatically. Try copying the text from the link and pasting it directly into this box! Error: ${error.message}</span>`;
                     return;
                 }
             } else {
-                // Raw text pasted directly (local files, copied text)
                 textToScan = cleanHtml(rawInput);
             }
 
@@ -432,16 +449,19 @@
                 resultsHtml += `<span style="color: #4df066;">✓ "You have quite a treasure there! It appears clean of immediate corporate corruption."</span>`;
             } else {
                 for (let [catKey, data] of Object.entries(findingsMap)) {
-                    let meta = CATEGORY_INFO[catKey] || { name: "UNKNOWN THREAT", translation: "Obscure corporate legal jargon detected." };
+                    let meta = CATEGORY_INFO[catKey] || { name: "UNKNOWN THREAT", severity: "red", translation: "Obscure corporate legal jargon detected." };
                     
+                    let highlightClass = meta.severity === "purple" ? "highlight-purple" : "highlight-red";
+                    let laymanClass = meta.severity === "purple" ? "layman-purple" : "layman-green";
+
                     let highlightedSample = data.sample.replace(
                         data.matchedTerm, 
-                        `<span class="highlight">${data.matchedTerm}</span>`
+                        `<span class="${highlightClass}">${data.matchedTerm}</span>`
                     );
 
-                    resultsHtml += `📜 <strong>Found Line (${meta.name}):</strong> <span class="occurrence-badge">${data.count} Occurrence${data.count > 1 ? 's' : ''}</span><br>`;
+                    resultsHtml += `📜 <strong>Found Clause (${meta.name}):</strong> <span class="occurrence-badge">${data.count} Occurrence${data.count > 1 ? 's' : ''}</span><br>`;
                     resultsHtml += `... ${highlightedSample} ...<br>`;
-                    resultsHtml += `<span class="layman">💡 <strong>Layman Translation:</strong> ${meta.translation}</span>`;
+                    resultsHtml += `<span class="${laymanClass}">💡 <strong>Layman Translation:</strong> ${meta.translation}</span>`;
                 }
 
                 resultsHtml += `<br><span style="color: #ff6b6b; font-weight: bold;">✖ "Our worst fears are realized. I have identified ${totalCategoriesFound} distinct dark clauses across the text. Do not sign this contract!"</span>`;
@@ -451,7 +471,8 @@
         }
     </script>
 </body>
-    <div>
+</html>
+ <div>
 <form action="https://www.paypal.com/donate" method="post" target="_top">
 <input type="hidden" name="hosted_button_id" value="AZGS2XRH34M3Y" />
 <input type="image" src="bhdonate7.png" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
