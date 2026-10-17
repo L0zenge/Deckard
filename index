@@ -61,7 +61,6 @@
             opacity: 0.95;
         }
 
-        /* Default UI Box State */
         .tome-container {
             background: #2b1a10;
             background-image: linear-gradient(135deg, #3d2517 0%, #1c100a 100%);
@@ -78,7 +77,6 @@
             flex-direction: column;
         }
 
-        /* Expanded State (Triggered after identification) */
         .tome-container.expanded {
             width: 85vw !important;
             max-width: 1100px;
@@ -236,11 +234,21 @@
             border-radius: 2px;
         }
 
+        .occurrence-badge {
+            color: #f3d283;
+            background: rgba(243, 210, 131, 0.15);
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 6px;
+        }
+
         .layman {
             color: #4df066;
             display: block;
             margin-top: 3px;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             padding-left: 10px;
             border-left: 2px solid #4df066;
         }
@@ -249,13 +257,9 @@
 <body>
 
     <div class="scene-stage">
-        <!-- Layer 1: Deckard Cain Sprite -->
         <img src="deckard.png" alt="Deckard Cain" class="cain-sprite" onerror="this.style.display='none'">
-
-        <!-- Layer 2: Background Upright Tome Asset -->
         <img src="tome.png" alt="Tome of Identify" class="tome-bg-asset" onerror="this.style.display='none'">
 
-        <!-- Layer 3: Interactive UI Plate -->
         <div class="tome-container" id="tomeContainer">
             <div class="header">
                 <span class="speech-bubble-icon">💬❓</span>
@@ -281,15 +285,40 @@
     </div>
 
     <script>
-        const LAYMAN_TRANSLATIONS = {
-            "sublicense": "They want the right to legally rent, lease, or outright sell your data/creations to third-party tech giants to train outside AI models—and your hands will be legally tied.",
-            "perpetuity": "This contract outlives you. 'Forever' means even if you delete your account, quit the industry, or pass away, they (and anyone they sell your work to) retain the legal right to use it.",
-            "media_trap": "The ultimate AI training model loophole. By pre-consenting to future media forms 'hereafter discovered,' you are giving them prior permission to feed your audio/visuals into algorithm engines.",
-            "derivative": "They want to generate 'similar but different' content based strictly on your style, melodies, or timbres without having to pay you a single cent for the new variation.",
-            "whole_part": "They can chop your track into pieces, isolate your vocals, or steal specific melodies. In AI music generation, this lets them isolate your 'stems' to train machine components.",
-            "lawsuit_ban": "You cannot sue them in an actual courtroom, and you cannot join forces with other scammed creators. Any fight must be fought completely alone in front of a private, closed-door corporate arbitrator.",
+        const CATEGORY_INFO = {
+            "lawsuit_ban": {
+                name: "ARBITRATION & LAWSUIT WAIVER",
+                translation: "You cannot sue them in an actual courtroom, and you cannot join forces with other scammed creators. Any fight must be fought completely alone in front of a private, closed-door corporate arbitrator."
+            },
+            "perpetuity": {
+                name: "PERPETUAL RIGHTS / LIFETIME LOCK",
+                translation: "This contract outlives you. 'Forever' means even if you delete your account, quit the industry, or pass away, they (and anyone they sell your work to) retain the legal right to use it."
+            },
+            "sublicense": {
+                name: "THIRD-PARTY SUBLICENSING",
+                translation: "They want the right to legally rent, lease, or outright sell your data/creations to third-party tech giants to train outside AI models—and your hands will be legally tied."
+            },
+            "media_trap": {
+                name: "FUTURE MEDIA LOOPHOLE",
+                translation: "The ultimate AI training model loophole. By pre-consenting to future media forms 'hereafter discovered,' you are giving them prior permission to feed your audio/visuals into algorithm engines."
+            },
+            "derivative": {
+                name: "DERIVATIVE WORK CLAIM",
+                translation: "They want to generate 'similar but different' content based strictly on your style, melodies, or timbres without having to pay you a single cent for the new variation."
+            },
+            "whole_part": {
+                name: "PARTIAL REPRODUCTION / STEM HARVESTING",
+                translation: "They can chop your track into pieces, isolate your vocals, or steal specific melodies. In AI music generation, this lets them isolate your 'stems' to train machine components."
+            },
             "bot_trap": "They can kick you out of the competition whenever they want without providing a shred of hard technical proof. They can blame 'suspicious scripts' to void a massive payout completely unchecked.",
-            "ai_train": "They are explicitly telling you they intend to harvest your submission to train internal models, build automated promotional tools, or synthetically replicate your work layout."
+            "bot_trap": {
+                name: "ARBITRARY BOT / SCRIPT DISQUALIFICATION",
+                translation: "They can kick you out of the competition whenever they want without providing hard technical proof, blaming 'suspicious scripts' to void a massive payout completely unchecked."
+            },
+            "ai_train": {
+                name: "AI MODEL TRAINING HARVEST",
+                translation: "They are explicitly telling you they intend to harvest your submission to train internal models, build automated promotional tools, or synthetically replicate your work layout."
+            }
         };
 
         const SCAM_PATTERN = /\b(?<sublicense>sub[- ]?licens(?:e|ing))|\b(?<perpetuity>in perpetuity|perpetual)\b|\b(?<media_trap>any (?:and )?all media|hereafter discovered)\b|\b(?<derivative>deriv(?:a|i)tive work)\b|\b(?<whole_part>reproduction[s]? (?:either )?in whole or in part)\b|\b(?<lawsuit_ban>waive[r]? (?:moral|class|jury)|class[- ]action|dispute[s]? resolved (?:exclusively )?by|agree not to sue|waive.*right to.*(?:sue|court|litigate))\b|\b(?<bot_trap>(?:bot|robot(?:ic)?|automat(?:ed|ion)|script|third[- ]party|3rd[- ]party).+?(?:tamper|cheat|disqual|manipulat))\b|\b(?<ai_train>(?:generat(?:e|ive)|train|feed|model|algorithm|synthesiz).+?(?:material|submit|work|content|data))\b/gi;
@@ -322,16 +351,15 @@
                 return;
             }
 
-            // Expand window to large screen mode
             tomeContainer.classList.add('expanded');
-
-            output.innerHTML = '<span style="color: #f3d283;">"Hello, my friend. Stay a while, and listen!" Uncapping scroll case and scanning the text...</span>';
+            output.innerHTML = '<span style="color: #f3d283;">"Hello, my friend. Stay a while, and listen!" Uncapping scroll case and grouping threats...</span>';
 
             try {
                 const text = await fetchUrlText(urlInput);
                 const sentences = text.split(/(?<=[.!?])\s+/);
-                let matchesFound = 0;
-                let resultsHtml = `<strong style="color: #d4c39e;">=== SCROLL IDENTIFICATION REPORT ===</strong><br><br>`;
+                
+                // Grouping map: { categoryKey: { count: N, sampleSnippet: '...' } }
+                const findingsMap = {};
 
                 for (let sentence of sentences) {
                     sentence = sentence.trim();
@@ -340,37 +368,40 @@
                     SCAM_PATTERN.lastIndex = 0;
                     let match = SCAM_PATTERN.exec(sentence);
                     
-                    if (match) {
-                        matchesFound++;
-                        let triggeredGroup = null;
-                        let matchedText = match[0];
-                        
-                        if (match.groups) {
-                            for (let [groupName, value] of Object.entries(match.groups)) {
-                                if (value !== undefined) {
-                                    triggeredGroup = groupName;
-                                    matchedText = value;
-                                    break;
+                    if (match && match.groups) {
+                        for (let [groupName, value] of Object.entries(match.groups)) {
+                            if (value !== undefined) {
+                                if (!findingsMap[groupName]) {
+                                    findingsMap[groupName] = { count: 0, sample: sentence, matchedTerm: value };
                                 }
+                                findingsMap[groupName].count++;
+                                break;
                             }
                         }
-
-                        let highlightedSentence = sentence.replace(
-                            matchedText, 
-                            `<span class="highlight">${matchedText}</span>`
-                        );
-
-                        let laymanTranslation = LAYMAN_TRANSLATIONS[triggeredGroup] || "They are trying to sneak obscure legal jargon past your eyes.";
-
-                        resultsHtml += `📜 <strong>Found Line:</strong> ... ${highlightedSentence} ...<br>`;
-                        resultsHtml += `<span class="layman">💡 <strong>Layman Translation:</strong> ${laymanTranslation}</span>`;
                     }
                 }
 
-                if (matchesFound === 0) {
+                let totalCategoriesFound = Object.keys(findingsMap).length;
+                let resultsHtml = `<strong style="color: #d4c39e;">=== SCROLL IDENTIFICATION REPORT ===</strong><br><br>`;
+
+                if (totalCategoriesFound === 0) {
                     resultsHtml += `<span style="color: #4df066;">✓ "You have quite a treasure there! It appears clean of immediate corporate corruption."</span>`;
                 } else {
-                    resultsHtml += `<br><span style="color: #ff6b6b; font-weight: bold;">✖ "Our worst fears are realized. I have identified ${matchesFound} corruptions. Do not sign this contract!"</span>`;
+                    for (let [catKey, data] of Object.entries(findingsMap)) {
+                        let meta = CATEGORY_INFO[catKey] || { name: "UNKNOWN THREAT", translation: "Obscure corporate legal jargon detected." };
+                        
+                        // Highlight keyword in the sample snippet
+                        let highlightedSample = data.sample.replace(
+                            data.matchedTerm, 
+                            `<span class="highlight">${data.matchedTerm}</span>`
+                        );
+
+                        resultsHtml += `📜 <strong>Found Line (${meta.name}):</strong> <span class="occurrence-badge">${data.count} Occurrence${data.count > 1 ? 's' : ''}</span><br>`;
+                        resultsHtml += `... ${highlightedSample} ...<br>`;
+                        resultsHtml += `<span class="layman">💡 <strong>Layman Translation:</strong> ${meta.translation}</span>`;
+                    }
+
+                    resultsHtml += `<br><span style="color: #ff6b6b; font-weight: bold;">✖ "Our worst fears are realized. I have identified ${totalCategoriesFound} distinct dark clauses across the text. Do not sign this contract!"</span>`;
                 }
 
                 output.innerHTML = resultsHtml;
