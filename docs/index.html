@@ -250,7 +250,7 @@
 
     <div class="scene-stage">
         <!-- Layer 1: Deckard Cain Sprite -->
-        <img src="cain.gif" alt="Deckard Cain" class="cain-sprite" onerror="this.style.display='none'">
+        <img src="deckard.png" alt="Deckard Cain" class="cain-sprite" onerror="this.style.display='none'">
 
         <!-- Layer 2: Background Upright Tome Asset -->
         <img src="tome.png" alt="Tome of Identify" class="tome-bg-asset" onerror="this.style.display='none'">
@@ -292,4 +292,93 @@
             "ai_train": "They are explicitly telling you they intend to harvest your submission to train internal models, build automated promotional tools, or synthetically replicate your work layout."
         };
 
-        const SCAM_PATTERN = /\b(?<sublicense>sub[- ]?licens(?:e|ing))|\b(?<perpetuity>in perpetuity|perpetual)\b|\b(?<media_trap>any (?:and )?all media|hereafter discovered)\b|\b(?<derivative>deriv(?:a|i)tive work)\b|\b(?<whole_part>reproduction[s]? (?:either )?in whole or in part)\b|\b(?<lawsuit_ban>waive[r]? (?:moral|class|jury)|class[- ]action|dispute[s]? resolved (?:exclusively )?by|agree not to sue|waive.*right to.*(?:sue|court|litigate))\b|\b(?<bot_trap>(?:bot|robot(?:ic)?|automat(?:ed|ion)|script|third[- ]party|3rd[- ]party).+?(?:tamper|cheat|disqual|manipulat))\b|\b(?<ai_train>(?:generat(?:
+        const SCAM_PATTERN = /\b(?<sublicense>sub[- ]?licens(?:e|ing))|\b(?<perpetuity>in perpetuity|perpetual)\b|\b(?<media_trap>any (?:and )?all media|hereafter discovered)\b|\b(?<derivative>deriv(?:a|i)tive work)\b|\b(?<whole_part>reproduction[s]? (?:either )?in whole or in part)\b|\b(?<lawsuit_ban>waive[r]? (?:moral|class|jury)|class[- ]action|dispute[s]? resolved (?:exclusively )?by|agree not to sue|waive.*right to.*(?:sue|court|litigate))\b|\b(?<bot_trap>(?:bot|robot(?:ic)?|automat(?:ed|ion)|script|third[- ]party|3rd[- ]party).+?(?:tamper|cheat|disqual|manipulat))\b|\b(?<ai_train>(?:generat(?:e|ive)|train|feed|model|algorithm|synthesiz).+?(?:material|submit|work|content|data))\b/gi;
+
+        function cleanHtml(htmlContent) {
+            let text = htmlContent.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '');
+            text = text.replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '');
+            text = text.replace(/<[^>]+>/g, ' ');
+            text = text.replace(/\s+/g, ' ');
+            return text;
+        }
+
+        async function fetchUrlText(url) {
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+            const response = await fetch(proxyUrl);
+            if (!response.ok) {
+                throw new Error(`HTTP Status: ${response.status}`);
+            }
+            const html = await response.text();
+            return cleanHtml(html);
+        }
+
+        async function processUrl() {
+            const urlInput = document.getElementById('urlInput').value.trim();
+            const output = document.getElementById('output');
+            const tomeContainer = document.getElementById('tomeContainer');
+
+            if (!urlInput) {
+                output.innerHTML = '<span style="color: #ff6b6b;">Error: You must provide an unidentified link!</span>';
+                return;
+            }
+
+            // Expand window to large screen mode
+            tomeContainer.classList.add('expanded');
+
+            output.innerHTML = '<span style="color: #f3d283;">"Hello, my friend. Stay a while, and listen!" Uncapping scroll case and scanning the text...</span>';
+
+            try {
+                const text = await fetchUrlText(urlInput);
+                const sentences = text.split(/(?<=[.!?])\s+/);
+                let matchesFound = 0;
+                let resultsHtml = `<strong style="color: #d4c39e;">=== SCROLL IDENTIFICATION REPORT ===</strong><br><br>`;
+
+                for (let sentence of sentences) {
+                    sentence = sentence.trim();
+                    if (!sentence) continue;
+
+                    SCAM_PATTERN.lastIndex = 0;
+                    let match = SCAM_PATTERN.exec(sentence);
+                    
+                    if (match) {
+                        matchesFound++;
+                        let triggeredGroup = null;
+                        let matchedText = match[0];
+                        
+                        if (match.groups) {
+                            for (let [groupName, value] of Object.entries(match.groups)) {
+                                if (value !== undefined) {
+                                    triggeredGroup = groupName;
+                                    matchedText = value;
+                                    break;
+                                }
+                            }
+                        }
+
+                        let highlightedSentence = sentence.replace(
+                            matchedText, 
+                            `<span class="highlight">${matchedText}</span>`
+                        );
+
+                        let laymanTranslation = LAYMAN_TRANSLATIONS[triggeredGroup] || "They are trying to sneak obscure legal jargon past your eyes.";
+
+                        resultsHtml += `📜 <strong>Found Line:</strong> ... ${highlightedSentence} ...<br>`;
+                        resultsHtml += `<span class="layman">💡 <strong>Layman Translation:</strong> ${laymanTranslation}</span>`;
+                    }
+                }
+
+                if (matchesFound === 0) {
+                    resultsHtml += `<span style="color: #4df066;">✓ "You have quite a treasure there! It appears clean of immediate corporate corruption."</span>`;
+                } else {
+                    resultsHtml += `<br><span style="color: #ff6b6b; font-weight: bold;">✖ "Our worst fears are realized. I have identified ${matchesFound} corruptions. Do not sign this contract!"</span>`;
+                }
+
+                output.innerHTML = resultsHtml;
+
+            } catch (error) {
+                output.innerHTML = `<span style="color: #ff6b6b;">[Cain] The gateway is barred or unreachable, my friend! Error: ${error.message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
