@@ -197,3 +197,36 @@
 
         <div class="parchment">
             <label for="urlInput">Target URL to Identify:</label>
+            <input type="text" id="urlInput" placeholder="https://example.com/item_to_parse">
+            
+            <div class="btn-container">
+                <button onclick="processUrl()">Identify Item</button>
+            </div>
+        </div>
+
+        <div class="output-box">
+            <h3>Identified Result:</h3>
+            <pre id="output">Unidentified item awaits identification...</pre>
+        </div>
+    </div>
+
+    <script>
+        function processUrl() {
+            const url = document.getElementById('urlInput').value;
+            const output = document.getElementById('output');
+
+            if (!url) {
+                output.textContent = "Error: You must provide an unidentified link!";
+                output.style.color = "#ff6b6b";
+                return;
+            }
+
+            output.style.color = "#4df066";
+            
+            // TODO: Plug in your JS regex/translation logic here!
+            output.textContent = "Identified: " + url + "\n(Your regex translation logic runs here)";
+        }
+    </script>
+
+</body>
+</html>
