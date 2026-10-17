@@ -24,6 +24,23 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Deckard Sprite Background Watermark on the Left */
+        .deckard-bg-sprite {
+            position: fixed;
+            left: 20px;
+            bottom: 0;
+            width: 220px;
+            height: auto;
+            object-fit: contain;
+            image-rendering: pixelated;
+            opacity: 0.35;
+            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.2));
+            pointer-events: none;
+            z-index: 0;
         }
 
         /* Leather Tome Outer Container */
@@ -34,13 +51,13 @@
             outline: 3px solid #110b07;
             border-radius: 12px;
             box-shadow: 0 0 30px rgba(0, 0, 0, 0.9), inset 0 0 15px rgba(0, 0, 0, 0.8);
-            max-width: 650px;
+            max-width: 700px;
             width: 100%;
             padding: 30px;
             position: relative;
+            z-index: 1;
         }
 
-        /* Gold Decorative Trim */
         .tome-container::before {
             content: '';
             position: absolute;
@@ -54,19 +71,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 20px;
+            gap: 15px;
             margin-bottom: 25px;
             border-bottom: 2px solid #5a3d28;
             padding-bottom: 15px;
         }
 
-        /* Deckard Sprite Slot */
-        .deckard-sprite {
-            width: 64px;
-            height: 64px;
-            object-fit: contain;
-            image-rendering: pixelated; /* Keeps retro pixel art crisp */
-            filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4));
+        .speech-bubble-icon {
+            font-size: 28px;
+            filter: drop-shadow(0 0 5px #f3d283);
         }
 
         h1 {
@@ -87,7 +100,6 @@
             text-shadow: 1px 1px 2px #000;
         }
 
-        /* Parchment Inner Input Area */
         .parchment {
             background-color: #d1be9c;
             background-image: linear-gradient(to bottom, #e2d2b4, #c2ae8a);
@@ -125,14 +137,12 @@
             box-shadow: 0 0 8px rgba(201, 147, 59, 0.6);
         }
 
-        /* Scroll/Button Styling */
         .btn-container {
             text-align: center;
             margin-top: 15px;
         }
 
         button {
-            background: linear-gradient(to bottom, #8a2be2, #4a0080); /* Scroll of Identify vibe, or bronze */
             background: linear-gradient(to bottom, #a87932, #5c3f15);
             color: #fff1d0;
             font-family: 'Cinzel', serif;
@@ -157,13 +167,14 @@
             transform: translateY(1px);
         }
 
-        /* Result Section */
         .output-box {
             background: #110b07;
             border: 2px solid #5a3d28;
             border-radius: 4px;
             padding: 15px;
             margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
         }
 
         .output-box h3 {
@@ -175,58 +186,168 @@
             padding-bottom: 4px;
         }
 
-        pre {
+        .log-content {
             font-family: monospace;
-            color: #4df066; /* Retro terminal green for parsed text */
+            font-size: 13px;
+            line-height: 1.5;
             white-space: pre-wrap;
             word-wrap: break-word;
-            font-size: 14px;
+            color: #d4c39e;
+        }
+
+        .highlight {
+            color: #ff6b6b;
+            font-weight: bold;
+            background: rgba(255, 107, 107, 0.15);
+            padding: 0 3px;
+            border-radius: 2px;
+        }
+
+        .cain-dialogue {
+            color: #ffc107;
+            font-weight: bold;
+        }
+
+        .layman {
+            color: #4df066;
         }
     </style>
 </head>
 <body>
 
+    <!-- Watermarked Deckard Sprite in the Background on the Left -->
+    <img src="deckard.png" alt="Deckard Cain" class="deckard-bg-sprite" onerror="this.style.display='none'">
+
     <div class="tome-container">
         <div class="header">
-            <!-- Put your sprite file in the same docs folder as deckard.png -->
-            <img src="deckard.png" alt="Deckard Cain" class="deckard-sprite" onerror="this.style.display='none'">
-            <h1>Tome of Identification</h1>
+            <span class="speech-bubble-icon">💬❓</span>
+            <h1>Identify Items</h1>
         </div>
 
-        <p.quote>"Stay awhile and listen... or paste your link below."</p>
+        <p class="quote">"Stay awhile and listen... or paste your link below."</p>
 
         <div class="parchment">
             <label for="urlInput">Target URL to Identify:</label>
-            <input type="text" id="urlInput" placeholder="https://example.com/item_to_parse">
+            <input type="text" id="urlInput" placeholder="https://example.com/legal/rules">
             
             <div class="btn-container">
-                <button onclick="processUrl()">Identify Item</button>
+                <button onclick="processUrl()">🔍 Identify Item</button>
             </div>
         </div>
 
         <div class="output-box">
             <h3>Identified Result:</h3>
-            <pre id="output">Unidentified item awaits identification...</pre>
+            <div id="output" class="log-content">Unidentified item awaits identification...</div>
         </div>
     </div>
 
     <script>
-        function processUrl() {
-            const url = document.getElementById('urlInput').value;
+        const LAYMAN_TRANSLATIONS = {
+            "sublicense": "They want the right to legally rent, lease, or outright sell your data/creations to third-party tech giants to train outside AI models—and your hands will be legally tied.",
+            "perpetuity": "This contract outlives you. 'Forever' means even if you delete your account, quit the industry, or pass away, they (and anyone they sell your work to) retain the legal right to use it.",
+            "media_trap": "The ultimate AI training model loophole. By pre-consenting to future media forms 'hereafter discovered,' you are giving them prior permission to feed your audio/visuals into algorithm engines.",
+            "derivative": "They want to generate 'similar but different' content based strictly on your style, melodies, or timbres without having to pay you a single cent for the new variation.",
+            "whole_part": "They can chop your track into pieces, isolate your vocals, or steal specific melodies. In AI music generation, this lets them isolate your 'stems' to train machine components.",
+            "lawsuit_ban": "You cannot sue them in an actual courtroom, and you cannot join forces with other scammed creators. Any fight must be fought completely alone in front of a private, closed-door corporate arbitrator.",
+            "bot_trap": "They can kick you out of the competition whenever they want without providing a shred of hard technical proof. They can blame 'suspicious scripts' to void a massive payout completely unchecked.",
+            "ai_train": "They are explicitly telling you they intend to harvest your submission to train internal models, build automated promotional tools, or synthetically replicate your work layout."
+        };
+
+        const CAIN_WARNINGS = [
+            "This text contains a great evil, the likes of which I have not seen since the fall of Tristram!",
+            "Ah, the signature of the Dark Wanderer is all over this clause...",
+            "By the three! This passage attempts to consume your very soul and your creations!",
+            "It is as I feared... They seek to bind your works to the Burning Hells in perpetuity.",
+            "A clever deception! Diablo himself could not have crafted a more devious trap.",
+            "Look here, my friend! This phrasing is a manifestation of pure corporate malice."
+        ];
+
+        const SCAM_PATTERN = /\b(?<sublicense>sub[- ]?licens(?:e|ing))|\b(?<perpetuity>in perpetuity|perpetual)\b|\b(?<media_trap>any (?:and )?all media|hereafter discovered)\b|\b(?<derivative>deriv(?:a|i)tive work)\b|\b(?<whole_part>reproduction[s]? (?:either )?in whole or in part)\b|\b(?<lawsuit_ban>waive[r]? (?:moral|class|jury)|class[- ]action|dispute[s]? resolved (?:exclusively )?by|agree not to sue|waive.*right to.*(?:sue|court|litigate))\b|\b(?<bot_trap>(?:bot|robot(?:ic)?|automat(?:ed|ion)|script|third[- ]party|3rd[- ]party).+?(?:tamper|cheat|disqual|manipulat))\b|\b(?<ai_train>(?:generat(?:e|ive)|train|feed|model|algorithm|synthesiz).+?(?:material|submit|work|content|data))\b/gi;
+
+        function cleanHtml(htmlContent) {
+            let text = htmlContent.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '');
+            text = text.replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '');
+            text = text.replace(/<[^>]+>/g, ' ');
+            text = text.replace(/\s+/g, ' ');
+            return text;
+        }
+
+        async function fetchUrlText(url) {
+            // Uses a public CORS proxy to allow browser fetch() on external targets safely
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+            const response = await fetch(proxyUrl);
+            if (!response.ok) {
+                throw new Error(`HTTP Status: ${response.status}`);
+            }
+            const html = await response.text();
+            return cleanHtml(html);
+        }
+
+        async function processUrl() {
+            const urlInput = document.getElementById('urlInput').value.trim();
             const output = document.getElementById('output');
 
-            if (!url) {
-                output.textContent = "Error: You must provide an unidentified link!";
-                output.style.color = "#ff6b6b";
+            if (!urlInput) {
+                output.innerHTML = '<span style="color: #ff6b6b;">Error: You must provide an unidentified link!</span>';
                 return;
             }
 
-            output.style.color = "#4df066";
-            
-            // TODO: Plug in your JS regex/translation logic here!
-            output.textContent = "Identified: " + url + "\n(Your regex translation logic runs here)";
+            output.innerHTML = '<span style="color: #f3d283;">\"Hello, my friend. Stay a while, and listen!\"<br>Uncapping scroll case and reading pathways...</span>';
+
+            try {
+                const text = await fetchUrlText(urlInput);
+                const sentences = text.split(/(?<=[.!?])\s+/);
+                let matchesFound = 0;
+                let resultsHtml = `<strong style="color: #d4c39e;">=== THE HORADRIC SCROLL OF IDENTIFICATION ===</strong>\n\n`;
+
+                for (let sentence of sentences) {
+                    sentence = sentence.trim();
+                    if (!sentence) continue;
+
+                    SCAM_PATTERN.lastIndex = 0;
+                    let match = SCAM_PATTERN.exec(sentence);
+                    
+                    if (match) {
+                        matchesFound++;
+                        let triggeredGroup = null;
+                        let matchedText = match[0];
+                        
+                        if (match.groups) {
+                            for (let [groupName, value] of Object.entries(match.groups)) {
+                                if (value !== undefined) {
+                                    triggeredGroup = groupName;
+                                    matchedText = value;
+                                    break;
+                                }
+                            }
+                        }
+
+                        let highlightedSentence = sentence.replace(
+                            matchedText, 
+                            `<span class="highlight">${matchedText}</span>`
+                        );
+
+                        let laymanTranslation = LAYMAN_TRANSLATIONS[triggeredGroup] || "They are trying to sneak obscure legal jargon past your eyes.";
+                        let cainQuote = CAIN_WARNINGS[Math.floor(Math.random() * CAIN_WARNINGS.length)];
+
+                        resultsHtml += `<span class="cain-dialogue">[DESTRUCTION BLOCK #${matchesFound}]</span> "${cainQuote}"\n`;
+                        resultsHtml += `  📜 Raw Line: ... ${highlightedSentence} ...\n`;
+                        resultsHtml += `  <span class="layman">💡 Layman's Terms:</span> ${laymanTranslation}\n\n`;
+                    }
+                }
+
+                if (matchesFound === 0) {
+                    resultsHtml += `<span class="layman">✓ "You have quite a treasure there in that document! It appears clean of immediate corruption."</span>\n`;
+                } else {
+                    resultsHtml += `<span class="highlight">✖ "Our worst fears are realized. I have identified ${matchesFound} corruptions. Do not sign this, lest your soul belong to them!"</span>\n`;
+                }
+
+                output.innerHTML = resultsHtml;
+
+            } catch (error) {
+                output.innerHTML = `<span style="color: #ff6b6b;">[Cain] The gateway is barred or unreachable, my friend! Error: ${error.message}</span>`;
+            }
         }
     </script>
-
 </body>
 </html>
