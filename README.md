@@ -22,7 +22,7 @@ Moo.
 -L0z
   
 <p align="center">
-  <img src="bhcowjoy2.png"/>
+  <img src="BHcowjoy2.png"/>
 </p>
 
 ---
