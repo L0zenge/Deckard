@@ -1,19 +1,29 @@
-# Deckard 🔍📜🧙‍♂️
-Created by L0zenge
-Moo. 
+# Deckard 
+
+> *"Stay awhile, and listen!"*
+> 🔍📜🧙‍♂️
 
 
 <p align="center">
   <img src="image.png" alt="Deckard Cain" width="300px"/>
 </p>
 
-> *"Hello, my friend. Stay a while, and listen!"*
+
 
 Sick of running into walls of text in the ToS, "contest rules", NDA, or Privacy statements that are worded to be as vague as possible, while fucking you as HARD as possible? They try leaving the door open for them to sell and sub-license your information, likeness, and ideas and train AI models off or your work to "remix" YOUR content into media that may will be "hereafter discovered in perpetuity". Or use wording like: The consent is perpetual and binding on the heirs and successors of the Entrants and Competitors.
 They write terms in obfuscated, vague language and code so you don't know you're having your IP stolen. I response, we must use even nerdier language to scan their word-salad and inform the layman if they're getting taken advantage of or not. 
 Protip: You are. This will just break down where and how hard. 
 
 **Deckard** is a zero-dependency Horadric script that scans Terms of Service (TOS), contest rules, and NDAs for scamming AI bullshit and super-dense claude-clauses that are in there to steal your ACTUAL creativity. It unmasks modern corporate trap vernacular like AI training loops, data harvesting loopholes, hidden lawsuit bans, and arbitrary bot-disqualification triggers—before you accidentally sign away your creations to the Chaos Sanctuary.
+
+
+Moo.
+<p>
+-L0z
+  
+<p align="center">
+  <img src="cowjoy.png"/>
+</p>
 
 ---
 
