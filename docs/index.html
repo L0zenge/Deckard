@@ -69,7 +69,7 @@
             border-radius: 10px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.95), inset 0 0 15px rgba(0, 0, 0, 0.8);
             width: 440px;
-            height: 440px;
+            height: 460px;
             padding: 20px;
             position: relative;
             z-index: 3;
@@ -149,27 +149,29 @@
             color: #3d2517;
         }
 
-        input[type="text"] {
+        textarea {
             width: 100%;
+            height: 55px;
             padding: 7px;
             background: #f7eed8;
             border: 2px solid #5a3d28;
             border-radius: 4px;
             font-family: monospace;
-            font-size: 13px;
+            font-size: 12px;
             color: #1c100a;
             outline: none;
+            resize: none;
             transition: all 0.2s ease;
         }
 
-        input[type="text"]:focus {
+        textarea:focus {
             border-color: #c9933b;
             box-shadow: 0 0 6px rgba(201, 147, 59, 0.6);
         }
 
         .btn-container {
             text-align: center;
-            margin-top: 8px;
+            margin-top: 6px;
         }
 
         button {
@@ -281,15 +283,14 @@
                 <h1>Identify Items</h1>
             </div>
 
-            <p class="quote">"Stay awhile and listen..."</p>
-              <p class="quote">Paste the location of your mysterious language.</p>
+            <p class="quote">"Stay awhile and listen... or paste your scroll/URL below."</p>
 
             <div class="parchment">
-                <label for="urlInput">Target URL to Identify:</label>
-                <input type="text" id="urlInput" placeholder="https://example.com/legal/rules">
+                <label for="textInput">URL or Raw TOS Text to Identify:</label>
+                <textarea id="textInput" placeholder="Paste a web URL (https://...) or raw contract text directly..."></textarea>
                 
                 <div class="btn-container">
-                    <button onclick="processUrl()">Identify Item 🔍</button>
+                    <button onclick="processInput()">Identify Item 🔍</button>
                 </div>
             </div>
 
@@ -347,7 +348,6 @@
         }
 
         async function fetchUrlText(url) {
-            // Dual-proxy setup with 8-second timeout so it never freezes
             const fetchWithTimeout = async (proxyUrl) => {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 8000);
@@ -362,87 +362,93 @@
                 }
             };
 
-            // Try Proxy 1 (corsproxy.io)
             try {
                 const html = await fetchWithTimeout(`https://corsproxy.io/?${encodeURIComponent(url)}`);
                 return cleanHtml(html);
             } catch (err1) {
-                // Try Proxy 2 (allorigins.win fallback)
                 try {
                     const html2 = await fetchWithTimeout(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
                     return cleanHtml(html2);
                 } catch (err2) {
-                    throw new Error("Gateway blocked or timed out. (The target site may have Cloudflare or anti-bot security blocking readers).");
+                    throw new Error("Unable to fetch web URL.");
                 }
             }
         }
 
-        async function processUrl() {
-            const urlInput = document.getElementById('urlInput').value.trim();
+        async function processInput() {
+            const rawInput = document.getElementById('textInput').value.trim();
             const output = document.getElementById('output');
             const tomeContainer = document.getElementById('tomeContainer');
 
-            if (!urlInput) {
-                output.innerHTML = '<span style="color: #ff6b6b;">Error: You must provide an unidentified link!</span>';
+            if (!rawInput) {
+                output.innerHTML = '<span style="color: #ff6b6b;">Error: You must provide a URL or paste raw TOS text!</span>';
                 return;
             }
 
             tomeContainer.classList.add('expanded');
-            output.innerHTML = '<span style="color: #f3d283;">"Hello, my friend. Stay a while, and listen!" Uncapping scroll case and scanning...</span>';
+            output.innerHTML = '<span style="color: #f3d283;">"Hello, my friend. Stay a while, and listen!" Reading text...</span>';
 
-            try {
-                const text = await fetchUrlText(urlInput);
-                const sentences = text.split(/(?<=[.!?])\s+/);
+            let textToScan = rawInput;
+
+            // If input starts with http:// or https://, treat it as a web fetch
+            if (rawInput.startsWith('http://') || rawInput.startsWith('https://')) {
+                try {
+                    textToScan = await fetchUrlText(rawInput);
+                } catch (error) {
+                    output.innerHTML = `<span style="color: #ff6b6b;">[Cain] Unreachable web link! Error: ${error.message}</span>`;
+                    return;
+                }
+            } else {
+                // Raw text pasted directly (local files, copied text)
+                textToScan = cleanHtml(rawInput);
+            }
+
+            const sentences = textToScan.split(/(?<=[.!?])\s+/);
+            const findingsMap = {};
+
+            for (let sentence of sentences) {
+                sentence = sentence.trim();
+                if (!sentence) continue;
+
+                SCAM_PATTERN.lastIndex = 0;
+                let match = SCAM_PATTERN.exec(sentence);
                 
-                const findingsMap = {};
-
-                for (let sentence of sentences) {
-                    sentence = sentence.trim();
-                    if (!sentence) continue;
-
-                    SCAM_PATTERN.lastIndex = 0;
-                    let match = SCAM_PATTERN.exec(sentence);
-                    
-                    if (match && match.groups) {
-                        for (let [groupName, value] of Object.entries(match.groups)) {
-                            if (value !== undefined) {
-                                if (!findingsMap[groupName]) {
-                                    findingsMap[groupName] = { count: 0, sample: sentence, matchedTerm: value };
-                                }
-                                findingsMap[groupName].count++;
-                                break;
+                if (match && match.groups) {
+                    for (let [groupName, value] of Object.entries(match.groups)) {
+                        if (value !== undefined) {
+                            if (!findingsMap[groupName]) {
+                                findingsMap[groupName] = { count: 0, sample: sentence, matchedTerm: value };
                             }
+                            findingsMap[groupName].count++;
+                            break;
                         }
                     }
                 }
+            }
 
-                let totalCategoriesFound = Object.keys(findingsMap).length;
-                let resultsHtml = `<strong style="color: #d4c39e; font-size: 16px;">=== SCROLL IDENTIFICATION REPORT ===</strong><br><br>`;
+            let totalCategoriesFound = Object.keys(findingsMap).length;
+            let resultsHtml = `<strong style="color: #d4c39e; font-size: 16px;">=== SCROLL IDENTIFICATION REPORT ===</strong><br><br>`;
 
-                if (totalCategoriesFound === 0) {
-                    resultsHtml += `<span style="color: #4df066;">✓ "You have quite a treasure there! It appears clean of immediate corporate corruption."</span>`;
-                } else {
-                    for (let [catKey, data] of Object.entries(findingsMap)) {
-                        let meta = CATEGORY_INFO[catKey] || { name: "UNKNOWN THREAT", translation: "Obscure corporate legal jargon detected." };
-                        
-                        let highlightedSample = data.sample.replace(
-                            data.matchedTerm, 
-                            `<span class="highlight">${data.matchedTerm}</span>`
-                        );
+            if (totalCategoriesFound === 0) {
+                resultsHtml += `<span style="color: #4df066;">✓ "You have quite a treasure there! It appears clean of immediate corporate corruption."</span>`;
+            } else {
+                for (let [catKey, data] of Object.entries(findingsMap)) {
+                    let meta = CATEGORY_INFO[catKey] || { name: "UNKNOWN THREAT", translation: "Obscure corporate legal jargon detected." };
+                    
+                    let highlightedSample = data.sample.replace(
+                        data.matchedTerm, 
+                        `<span class="highlight">${data.matchedTerm}</span>`
+                    );
 
-                        resultsHtml += `📜 <strong>Found Line (${meta.name}):</strong> <span class="occurrence-badge">${data.count} Occurrence${data.count > 1 ? 's' : ''}</span><br>`;
-                        resultsHtml += `... ${highlightedSample} ...<br>`;
-                        resultsHtml += `<span class="layman">💡 <strong>Layman Translation:</strong> ${meta.translation}</span>`;
-                    }
-
-                    resultsHtml += `<br><span style="color: #ff6b6b; font-weight: bold;">✖ "Our worst fears are realized. I have identified ${totalCategoriesFound} distinct dark clauses across the text. Do not sign this contract!"</span>`;
+                    resultsHtml += `📜 <strong>Found Line (${meta.name}):</strong> <span class="occurrence-badge">${data.count} Occurrence${data.count > 1 ? 's' : ''}</span><br>`;
+                    resultsHtml += `... ${highlightedSample} ...<br>`;
+                    resultsHtml += `<span class="layman">💡 <strong>Layman Translation:</strong> ${meta.translation}</span>`;
                 }
 
-                output.innerHTML = resultsHtml;
-
-            } catch (error) {
-                output.innerHTML = `<span style="color: #ff6b6b;">[Cain] The gateway is barred or unreachable, my friend! Error: ${error.message}</span>`;
+                resultsHtml += `<br><span style="color: #ff6b6b; font-weight: bold;">✖ "Our worst fears are realized. I have identified ${totalCategoriesFound} distinct dark clauses across the text. Do not sign this contract!"</span>`;
             }
+
+            output.innerHTML = resultsHtml;
         }
     </script>
 </body>
