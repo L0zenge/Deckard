@@ -1,6 +1,6 @@
 Here is the updated JavaScript code for your `index.html`.
 
-### What changed:
+### What changed: 
 
 * **Grouped Aggregation Logic:** Instead of spamming the report every time a specific keyword or category (like `lawsuit_ban`, `perpetuity`, etc.) triggers, it now **groups them by category**.
 * **Clean Summary Format:** For each category found, it prints **one** consolidated entry showing:
