@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deckard Cain's Tome of Identification</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=MedievalSharp&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: width 0.4s ease, height 0.4s ease, max-width 0.4s ease, max-height 0.4s ease;
+        }
+
+        body {
+            background-color: #0d0a08;
+            background-image: radial-gradient(circle, #231812 0%, #0d0a08 100%);
+            color: #d4c39e;
+            font-family: 'MedievalSharp', cursive, serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .scene-stage {
+            position: relative;
+            width: 780px;
+            height: 520px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cain-sprite {
+            position: absolute;
+            left: 0px;
+            bottom: 20px;
+            width: 200px;
+            height: auto;
+            object-fit: contain;
+            image-rendering: pixelated;
+            filter: drop-shadow(2px 5px 10px rgba(0,0,0,0.8));
+            z-index: 1;
+        }
+
+        .tome-bg-asset {
+            position: absolute;
+            right: 40px;
+            top: 20px;
+            width: 380px;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.9));
+            z-index: 2;
+            opacity: 0.95;
+        }
+
+        .tome-container {
+            background: #2b1a10;
+            background-image: linear-gradient(135deg, #3d2517 0%, #1c100a 100%);
+            border: 6px solid #5a3d28;
+            outline: 2px solid #110b07;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.95), inset 0 0 15px rgba(0, 0, 0, 0.8);
+            width: 440px;
+            height: 440px;
+            padding: 20px;
+            position: relative;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tome-container.expanded {
+            width: 88vw !important;
+            max-width: 1200px;
+            height: 88vh !important;
+        }
+
+        .tome-container::before {
+            content: '';
+            position: absolute;
+            top: 4px; left: 4px; right: 4px; bottom: 4px;
+            border: 2px solid #8c6f3d;
+            border-radius: 6px;
+            pointer-events: none;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #5a3d28;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .header-tome-icon {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 4px #f3d283);
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            color: #f3d283;
+            font-size: 20px;
+            text-shadow: 2px 2px 4px #000;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        p.quote {
+            font-style: italic;
+            color: #bfa882;
+            text-align: center;
+            margin-bottom: 12px;
+            font-size: 13px;
+            text-shadow: 1px 1px 2px #000;
+            flex-shrink: 0;
+        }
+
+        .parchment {
+            background-color: #d1be9c;
+            background-image: linear-gradient(to bottom, #e2d2b4, #c2ae8a);
+            color: #2b1a10;
+            padding: 10px 12px;
+            border-radius: 4px;
+            border: 2px solid #7a5c3f;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.3);
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 4px;
+            color: #3d2517;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 7px;
+            background: #f7eed8;
+            border: 2px solid #5a3d28;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #1c100a;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: #c9933b;
+            box-shadow: 0 0 6px rgba(201, 147, 59, 0.6);
+        }
+
+        .btn-container {
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        button {
+            background: linear-gradient(to bottom, #a87932, #5c3f15);
+            color: #fff1d0;
+            font-family: 'Cinzel', serif;
+            font-size: 13px;
+            font-weight: bold;
+            padding: 6px 18px;
+            border: 2px solid #f3d283;
+            border-radius: 4px;
+            cursor: pointer;
+            text-shadow: 1px 1px 3px #000;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        button:hover {
+            background: linear-gradient(to bottom, #c9933b, #7a531d);
+            transform: translateY(-1px);
+            box-shadow: 0 0 10px rgba(243, 210, 131, 0.6);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .output-box {
+            background: #110b07;
+            border: 2px solid #5a3d28;
+            border-radius: 4px;
+            padding: 12px;
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .output-box h3 {
+            font-family: 'Cinzel', serif;
+            color: #f3d283;
+            font-size: 14px;
+            margin-bottom: 8px;
+            border-bottom: 1px dashed #5a3d28;
+            padding-bottom: 4px;
+            flex-shrink: 0;
+        }
+
+        .log-content {
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #d4c39e;
+            flex-grow: 1;
+        }
+
+        .tome-container.expanded .log-content {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .highlight {
+            color: #ff6b6b;
+            font-weight: bold;
+            background: rgba(255, 107, 107, 0.15);
+            padding: 1px 4px;
+            border-radius: 2px;
+        }
+
+        .occurrence-badge {
+            color: #f3d283;
+            background: rgba(243, 210, 131, 0.15);
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 6px;
+        }
+
+        .layman {
+            color: #4df066;
+            display: block;
+            margin-top: 6px;
+            margin-bottom: 18px;
+            padding-left: 12px;
+            border-left: 3px solid #4df066;
+            font-size: 14px;
+        }
+
+        .tome-container.expanded .layman {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scene-stage">
+        <img src="deckard.png" alt="Deckard Cain" class="cain-sprite" onerror="this.style.display='none'">
+        <img src="tome.png" alt="Tome of Identify" class="tome-bg-asset" onerror="this.style.display='none'">
+
+        <div class="tome-container" id="tomeContainer">
+            <div class="header">
+                <img src="tome.png" alt="Tome Icon" class="header-tome-icon" onerror="this.style.display='none'">
+                <h1>Identify Items</h1>
+            </div>
+
+            <p class="quote">"Stay awhile and listen... or paste your link below."</p>
+
+            <div class="parchment">
+                <label for="urlInput">Target URL to Identify:</label>
+                <input type="text" id="urlInput" placeholder="https://example.com/legal/rules">
+                
+                <div class="btn-container">
+                    <button onclick="processUrl()">Identify Item 🔍</button>
+                </div>
+            </div>
+
+            <div class="output-box">
+                <h3>Identified Result:</h3>
+                <div id="output" class="log-content">Unidentified item awaits identification...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CATEGORY_INFO = {
+            "lawsuit_ban": {
+                name: "ARBITRATION & LAWSUIT WAIVER",
+                translation: "You cannot sue them in an actual courtroom, and you cannot join forces with other scammed creators. Any fight must be fought completely alone in front of a private, closed-door corporate arbitrator."
+            },
+            "perpetuity": {
+                name: "PERPETUAL RIGHTS / LIFETIME LOCK",
+                translation: "This contract outlives you. 'Forever' means even if you delete your account, quit the industry, or pass away, they (and anyone they sell your work to) retain the legal right to use it."
+            },
+            "sublicense": {
+                name: "THIRD-PARTY SUBLICENSING",
+                translation: "They want the right to legally rent, lease, or outright sell your data/creations to third-party tech giants to train outside AI models—and your hands will be legally tied."
+            },
+            "media_trap": {
+                name: "FUTURE MEDIA LOOPHOLE",
+                translation: "The ultimate AI training model loophole. By pre-consenting to future media forms 'hereafter discovered,' you are giving them prior permission to feed your audio/visuals into algorithm engines."
+            },
+            "derivative": {
+                name: "DERIVATIVE WORK CLAIM",
+                translation: "They want to generate 'similar but different' content based strictly on your style, melodies, or timbres without having to pay you a single cent for the new variation."
+            },
+            "whole_part": {
+                name: "PARTIAL REPRODUCTION / STEM HARVESTING",
+                translation: "They can chop your track into pieces, isolate your vocals, or steal specific melodies. In AI music generation, this lets them isolate your 'stems' to train machine components."
+            },
+            "bot_trap": {
+                name: "ARBITRARY BOT / SCRIPT DISQUALIFICATION",
+                translation: "They can kick you out of the competition whenever they want without providing hard technical proof, blaming 'suspicious scripts' to void a massive payout completely unchecked."
+            },
+            "ai_train": {
+                name: "AI MODEL TRAINING HARVEST",
+                translation: "They are explicitly telling you they intend to harvest your submission to train internal models, build automated promotional tools, or synthetically replicate your work layout."
+            }
+        };
+
+        const SCAM_PATTERN = /\b(?<sublicense>sub[- ]?licens(?:e|ing))|\b(?<perpetuity>in perpetuity|perpetual)\b|\b(?<media_trap>any (?:and )?all media|hereafter discovered)\b|\b(?<derivative>deriv(?:a|i)tive work)\b|\b(?<whole_part>reproduction[s]? (?:either )?in whole or in part)\b|\b(?<lawsuit_ban>waive[r]? (?:moral|class|jury)|class[- ]action|dispute[s]? resolved (?:exclusively )?by|agree not to sue|waive.*right to.*(?:sue|court|litigate))\b|\b(?<bot_trap>(?:bot|robot(?:ic)?|automat(?:ed|ion)|script|third[- ]party|3rd[- ]party).+?(?:tamper|cheat|disqual|manipulat))\b|\b(?<ai_train>(?:generat(?:e|ive)|train|feed|model|algorithm|synthesiz).+?(?:material|submit|work|content|data))\b/gi;
+
+        function cleanHtml(htmlContent) {
+            let text = htmlContent.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '');
+            text = text.replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '');
+            text = text.replace(/<[^>]+>/g, ' ');
+            text = text.replace(/\s+/g, ' ');
+            return text;
+        }
+
+        async function fetchUrlText(url) {
+            // Dual-proxy setup with 8-second timeout so it never freezes
+            const fetchWithTimeout = async (proxyUrl) => {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
+                try {
+                    const res = await fetch(proxyUrl, { signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    if (!res.ok) throw new Error(`HTTP Status ${res.status}`);
+                    return await res.text();
+                } catch (e) {
+                    clearTimeout(timeoutId);
+                    throw e;
+                }
+            };
+
+            // Try Proxy 1 (corsproxy.io)
+            try {
+                const html = await fetchWithTimeout(`https://corsproxy.io/?${encodeURIComponent(url)}`);
+                return cleanHtml(html);
+            } catch (err1) {
+                // Try Proxy 2 (allorigins.win fallback)
+                try {
+                    const html2 = await fetchWithTimeout(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+                    return cleanHtml(html2);
+                } catch (err2) {
+                    throw new Error("Gateway blocked or timed out. (The target site may have Cloudflare or anti-bot security blocking readers).");
+                }
+            }
+        }
+
+        async function processUrl() {
+            const urlInput = document.getElementById('urlInput').value.trim();
+            const output = document.getElementById('output');
+            const tomeContainer = document.getElementById('tomeContainer');
+
+            if (!urlInput) {
+                output.innerHTML = '<span style="color: #ff6b6b;">Error: You must provide an unidentified link!</span>';
+                return;
+            }
+
+            tomeContainer.classList.add('expanded');
+            output.innerHTML = '<span style="color: #f3d283;">"Hello, my friend. Stay a while, and listen!" Uncapping scroll case and scanning...</span>';
+
+            try {
+                const text = await fetchUrlText(urlInput);
+                const sentences = text.split(/(?<=[.!?])\s+/);
+                
+                const findingsMap = {};
+
+                for (let sentence of sentences) {
+                    sentence = sentence.trim();
+                    if (!sentence) continue;
+
+                    SCAM_PATTERN.lastIndex = 0;
+                    let match = SCAM_PATTERN.exec(sentence);
+                    
+                    if (match && match.groups) {
+                        for (let [groupName, value] of Object.entries(match.groups)) {
+                            if (value !== undefined) {
+                                if (!findingsMap[groupName]) {
+                                    findingsMap[groupName] = { count: 0, sample: sentence, matchedTerm: value };
+                                }
+                                findingsMap[groupName].count++;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                let totalCategoriesFound = Object.keys(findingsMap).length;
+                let resultsHtml = `<strong style="color: #d4c39e; font-size: 16px;">=== SCROLL IDENTIFICATION REPORT ===</strong><br><br>`;
+
+                if (totalCategoriesFound === 0) {
+                    resultsHtml += `<span style="color: #4df066;">✓ "You have quite a treasure there! It appears clean of immediate corporate corruption."</span>`;
+                } else {
+                    for (let [catKey, data] of Object.entries(findingsMap)) {
+                        let meta = CATEGORY_INFO[catKey] || { name: "UNKNOWN THREAT", translation: "Obscure corporate legal jargon detected." };
+                        
+                        let highlightedSample = data.sample.replace(
+                            data.matchedTerm, 
+                            `<span class="highlight">${data.matchedTerm}</span>`
+                        );
+
+                        resultsHtml += `📜 <strong>Found Line (${meta.name}):</strong> <span class="occurrence-badge">${data.count} Occurrence${data.count > 1 ? 's' : ''}</span><br>`;
+                        resultsHtml += `... ${highlightedSample} ...<br>`;
+                        resultsHtml += `<span class="layman">💡 <strong>Layman Translation:</strong> ${meta.translation}</span>`;
+                    }
+
+                    resultsHtml += `<br><span style="color: #ff6b6b; font-weight: bold;">✖ "Our worst fears are realized. I have identified ${totalCategoriesFound} distinct dark clauses across the text. Do not sign this contract!"</span>`;
+                }
+
+                output.innerHTML = resultsHtml;
+
+            } catch (error) {
+                output.innerHTML = `<span style="color: #ff6b6b;">[Cain] Black magic bars our way... But the will of a Templar is stronger! Error: ${error.message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
