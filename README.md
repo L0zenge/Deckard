@@ -19,7 +19,7 @@ Protip: You are. This will just break down where and how hard.
 
 Moo.
 <p>
--L0z
+-L0z / BC
   
 <p align="center">
   <img src="BHcowjoy2.gif"/>
